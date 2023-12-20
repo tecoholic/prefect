@@ -97,12 +97,12 @@ jobs:
               if: ${{ matrix.build-docker-images }}
               uses: docker/setup-buildx-action@v3
 
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v4
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
-                  cache-dependency-path: "requirements*.txt"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "requirements*.txt"
 
             - name: Pin requirements to lower bounds
               if: ${{ matrix.lower-bound-requirements }}
@@ -212,12 +212,12 @@ jobs:
                   echo "Failure in $sanitized_name" > "${sanitized_name}-failure.txt"
                   echo "artifact_name=${sanitized_name}-failure" >> $GITHUB_OUTPUT
 
-            - name: Upload failure flag
-              if: ${{ failure() }}
-              uses: actions/upload-artifact@v3
-              with:
-                  name: ${{ steps.create_failure_flag.outputs.artifact_name }}
-                  path: "${{ steps.create_failure_flag.outputs.artifact_name }}.txt"
+      - name: Upload failure flag
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.create_failure_flag.outputs.artifact_name }}
+          path: "${{ steps.create_failure_flag.outputs.artifact_name }}.txt"
 
             - name: Check database container
               # Only applicable for Postgres, but we want this to run even when tests fail
@@ -277,12 +277,12 @@ jobs:
               if: ${{ matrix.build-docker-images }}
               uses: docker/setup-buildx-action@v3
 
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v4
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
-                  cache-dependency-path: "requirements*.txt"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "requirements*.txt"
 
             - name: Pin requirements to lower bounds
               if: ${{ matrix.lower-bound-requirements }}
@@ -400,12 +400,12 @@ jobs:
                   echo "Failure in $sanitized_name" > "${sanitized_name}-failure.txt"
                   echo "artifact_name=${sanitized_name}-failure" >> $GITHUB_OUTPUT
 
-            - name: Upload failure flag
-              if: ${{ failure() }}
-              uses: actions/upload-artifact@v3
-              with:
-                  name: ${{ steps.create_failure_flag.outputs.artifact_name }}
-                  path: "${{ steps.create_failure_flag.outputs.artifact_name }}.txt"
+      - name: Upload failure flag
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.create_failure_flag.outputs.artifact_name }}
+          path: "${{ steps.create_failure_flag.outputs.artifact_name }}.txt"
 
             - name: Check database container
               # Only applicable for Postgres, but we want this to run even when tests fail

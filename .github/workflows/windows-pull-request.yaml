@@ -58,12 +58,12 @@ jobs:
                   persist-credentials: false
                   fetch-depth: 0
 
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v4
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
-                  cache-dependency-path: "requirements*.txt"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "requirements*.txt"
 
             - name: Install packages
               run: |
