@@ -415,17 +415,18 @@ jobs:
                   && docker container logs postgres
                   || echo "Ignoring bad exit code"
 
-    notify-tests-failing-on-main:
-        needs: run-tests
-        if: github.ref == 'refs/heads/main' && failure()
-        runs-on: ubuntu-latest
-        env:
-            FAILURE_THRESHOLD: 1
-        steps:
-            - name: Download all failure flags
-              uses: actions/download-artifact@v3
-              with:
-                  path: failure-flags/
+
+  notify-tests-failing-on-main:
+    needs: run-tests
+    if: github.ref == 'refs/heads/main' && failure()
+    runs-on: ubuntu-latest
+    env:
+      FAILURE_THRESHOLD: 1
+    steps:
+      - name: Download all failure flags
+        uses: actions/download-artifact@v4
+        with:
+          path: failure-flags/
 
             - name: Check for failure flags
               id: check_failure
