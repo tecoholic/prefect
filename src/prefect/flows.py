@@ -39,6 +39,7 @@ from prefect._internal.pydantic import HAS_PYDANTIC_V2
 from prefect.client.orchestration import get_client
 from prefect.deployments.runner import DeploymentImage, deploy
 from prefect.filesystems import ReadableDeploymentStorage
+from prefect.input import RunInput
 from prefect.runner.storage import (
     BlockStorageAdapter,
     RunnerStorage,
@@ -205,6 +206,7 @@ class Flow(Generic[P, R]):
             List[Callable[[FlowSchema, FlowRun, State], None]]
         ] = None,
         on_crashed: Optional[List[Callable[[FlowSchema, FlowRun, State], None]]] = None,
+        accepts_input: Optional[Union[Type[RunInput], List[Type[RunInput]]]] = None,
     ):
         if name is not None and not isinstance(name, str):
             raise TypeError(
@@ -344,6 +346,8 @@ class Flow(Generic[P, R]):
         self.on_cancellation = on_cancellation
         self.on_crashed = on_crashed
 
+        self.accepts_input = accepts_input
+
         # Used for flows loaded from remote storage
         self._storage: Optional[RunnerStorage] = None
         self._entrypoint: Optional[str] = None
@@ -373,6 +377,7 @@ class Flow(Generic[P, R]):
             List[Callable[[FlowSchema, FlowRun, State], None]]
         ] = None,
         on_crashed: Optional[List[Callable[[FlowSchema, FlowRun, State], None]]] = None,
+        accepts_input: Optional[Union[Type[RunInput], List[Type[RunInput]]]] = None,
     ):
         """
         Create a new flow from the current object, updating provided options.
@@ -466,6 +471,7 @@ class Flow(Generic[P, R]):
             on_failure=on_failure or self.on_failure,
             on_cancellation=on_cancellation or self.on_cancellation,
             on_crashed=on_crashed or self.on_crashed,
+            accepts_input=accepts_input or self.accepts_input,
         )
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
@@ -1240,6 +1246,7 @@ def flow(
         List[Callable[[FlowSchema, FlowRun, State], None]]
     ] = None,
     on_crashed: Optional[List[Callable[[FlowSchema, FlowRun, State], None]]] = None,
+    accepts_input: Optional[Union[Type[RunInput], List[Type[RunInput]]]] = None,
 ) -> Callable[[Callable[P, R]], Flow[P, R]]:
     ...
 
@@ -1267,6 +1274,7 @@ def flow(
         List[Callable[[FlowSchema, FlowRun, State], None]]
     ] = None,
     on_crashed: Optional[List[Callable[[FlowSchema, FlowRun, State], None]]] = None,
+    accepts_input: Optional[Union[Type[RunInput], List[Type[RunInput]]]] = None,
 ):
     """
     Decorator to designate a function as a Prefect workflow.
@@ -1390,6 +1398,7 @@ def flow(
                 on_failure=on_failure,
                 on_cancellation=on_cancellation,
                 on_crashed=on_crashed,
+                accepts_input=accepts_input,
             ),
         )
     else:
@@ -1415,6 +1424,7 @@ def flow(
                 on_failure=on_failure,
                 on_cancellation=on_cancellation,
                 on_crashed=on_crashed,
+                accepts_input=accepts_input,
             ),
         )
 

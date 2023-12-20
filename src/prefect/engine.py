@@ -103,6 +103,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 from uuid import UUID, uuid4
@@ -155,7 +156,13 @@ from prefect.exceptions import (
 )
 from prefect.flows import Flow
 from prefect.futures import PrefectFuture, call_repr, resolve_futures_to_states
-from prefect.input import RunInput, keyset_from_paused_state
+from prefect.input import (
+    RunInput,
+    SendInputKeyset,
+    create_flow_run_input,
+    keyset_from_paused_state,
+    send_input_keyset_from_run_inputs,
+)
 from prefect.logging.configuration import setup_logging
 from prefect.logging.handlers import APILogHandler
 from prefect.logging.loggers import (
@@ -493,7 +500,11 @@ async def begin_flow_run(
     logger = flow_run_logger(flow_run, flow)
 
     log_prints = should_log_prints(flow)
-    flow_run_context = PartialModel(FlowRunContext, log_prints=log_prints)
+    keyset = await ensure_send_input_keyset(flow_run.id, flow)
+
+    flow_run_context = PartialModel(
+        FlowRunContext, log_prints=log_prints, input_keyset=keyset
+    )
 
     async with AsyncExitStack() as stack:
         await stack.enter_async_context(
@@ -2588,6 +2599,39 @@ def should_log_prints(flow_or_task: Union[Flow, Task]) -> bool:
             return PREFECT_LOGGING_LOG_PRINTS.value()
 
     return flow_or_task.log_prints
+
+
+async def ensure_send_input_keyset(
+    flow_run_id: UUID, flow: Flow
+) -> Optional[SendInputKeyset]:
+    if not flow.accepts_input:
+        return None
+
+    accepts_input = cast(
+        List[Type[RunInput]],
+        (
+            list(flow.accepts_input)
+            if isiterable(flow.accepts_input)
+            else [flow.accepts_input]
+        ),
+    )
+
+    keyset = send_input_keyset_from_run_inputs(accepts_input)
+    await create_flow_run_input("keyset", keyset, flow_run_id=flow_run_id)
+
+    for run_input in accepts_input:
+        run_input_name = run_input.__name__
+        try:
+            await run_input.save(keyset[run_input_name], flow_run_id=flow_run_id)
+        except Exception:
+            # TODO: Better error handling here, in _theory_ the only reason
+            # this should fail is if saving the keyset failed and, ignoring
+            # bugs / larger infrastructure issues, that would only happen if
+            # the key already exists and in that case we should just ignore
+            # it.
+            pass
+
+    return keyset
 
 
 def _resolve_custom_flow_run_name(flow: Flow, parameters: Dict[str, Any]) -> str:
