@@ -149,7 +149,7 @@ def my_flow(name: str, date: datetime.datetime):
     pass
 
 # creates a flow run called 'marvin-on-Thursday'
-my_flow(name="marvin", date=datetime.datetime.utcnow())
+my_flow(name="marvin", date=datetime.datetime.now(datetime.timezone.utc))
 ```
 
 Additionally this setting also accepts a function that returns a string for the flow run name:
@@ -159,7 +159,7 @@ import datetime
 from prefect import flow
 
 def generate_flow_run_name():
-    date = datetime.datetime.utcnow()
+    date = datetime.datetime.now(datetime.timezone.utc)
 
     return f"{date:%A}-is-a-nice-day"
 
@@ -863,7 +863,7 @@ my_flow()
 ## Pausing or suspending a flow run
 
 Prefect provides you with the ability to halt a flow run with two functions that are similar, but slightly different.
-When a flow run is paused, code execution is stopped and the process continues to run. 
+When a flow run is paused, code execution is stopped and the process continues to run.
 When a flow run is suspended, code execution is stopped and so is the process.
 
 ### Pause a flow run
@@ -947,7 +947,7 @@ resume_flow_run(FLOW_RUN_ID)
 ## Waiting for input when pausing or suspending a flow run
 
 !!! warning "Experimental"
-    The `wait_for_input` parameter used in the `pause_flow_run` or `suspend_flow_run` functions is an experimental feature. The interface or behavior of this feature may change without warning in future releases. 
+    The `wait_for_input` parameter used in the `pause_flow_run` or `suspend_flow_run` functions is an experimental feature. The interface or behavior of this feature may change without warning in future releases.
 
     If you encounter any issues, please let us know in Slack or with a Github issue.
 
@@ -974,9 +974,10 @@ async def greet_user():
 
     logger.info(f"Hello, {user_input.name}!")
 ```
-Running this flow will create a flow run. The flow run will advance until code execution reaches `pause_flow_run`, at which point it will  move it into a `Paused` state. Execution will block and wait for resumption. 
 
-When resuming the flow run, users will be prompted to provide a value for the `name` field of the `UserNameInput` model. Upon successful validation, the flow run will resume, and the return value of the `pause_flow_run` will be an instance of the `UserNameInput` model containing the provided data. 
+Running this flow will create a flow run. The flow run will advance until code execution reaches `pause_flow_run`, at which point it will  move it into a `Paused` state. Execution will block and wait for resumption.
+
+When resuming the flow run, users will be prompted to provide a value for the `name` field of the `UserNameInput` model. Upon successful validation, the flow run will resume, and the return value of the `pause_flow_run` will be an instance of the `UserNameInput` model containing the provided data.
 
 For more in-depth information on receiving input from users when pausing and suspending flow runs, see the [Creating human in the loop workflows](/guides/creating-human-in-the-loop-workflows/) guide.
 
@@ -1027,6 +1028,7 @@ While the cancellation process is robust, there are a few issues than can occur:
     </div>
 
     If you encounter any issues, please let us know in [Slack](https://www.prefect.io/slack/)Slack or with a [Github](https://github.com/PrefectHQ/prefect) issue.
+
 ### Cancel via the CLI
 
 From the command line in your execution environment, you can cancel a flow run by using the `prefect flow-run cancel` CLI command, passing the ID of the flow run.
