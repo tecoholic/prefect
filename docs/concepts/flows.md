@@ -446,7 +446,7 @@ from datetime import datetime
 @flow
 def what_day_is_it(date: datetime = None):
     if date is None:
-        date = datetime.utcnow()
+        date = datetime.now(timezone.utc)
     print(f"It was {date.strftime('%A')} on {date.isoformat()}")
 
 what_day_is_it("2021-01-01T02:00:19.180906")
