@@ -1985,29 +1985,25 @@ async def test_worker_set_last_polled_time(
 async def test_worker_last_polled_health_check(
     work_pool,
 ):
-    now = pendulum.now("utc")
+    pendulum.now("utc")
     # https://github.com/sdispater/pendulum/blob/master/docs/docs/testing.md
-    pendulum.set_test_now(now)
 
     async with WorkerTestImpl(work_pool_name=work_pool.name) as worker:
         resp = worker.is_worker_still_polling(query_interval_seconds=10)
         assert resp is True
 
-        pendulum.set_test_now(now.add(seconds=299))
+        pendulum.now().add(seconds=299)
         resp = worker.is_worker_still_polling(query_interval_seconds=10)
         assert resp is True
 
-        pendulum.set_test_now(now.add(seconds=301))
+        pendulum.now().add(seconds=301)
         resp = worker.is_worker_still_polling(query_interval_seconds=10)
         assert resp is False
 
-        pendulum.set_test_now(now.add(minutes=30))
+        pendulum.now().add(minutes=30)
         resp = worker.is_worker_still_polling(query_interval_seconds=60)
         assert resp is True
 
-        pendulum.set_test_now(now.add(minutes=30, seconds=1))
+        pendulum.now().add(minutes=30, seconds=1)
         resp = worker.is_worker_still_polling(query_interval_seconds=60)
         assert resp is False
-
-        # cleanup mock
-        pendulum.set_test_now()
