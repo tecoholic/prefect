@@ -16,6 +16,7 @@ mock; python_version < '3.8'
 moto
 mypy
 numpy
+pendulum[test] >= '3.0'
 pillow
 pre-commit
 pytest > 7
