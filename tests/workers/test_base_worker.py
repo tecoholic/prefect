@@ -1985,25 +1985,26 @@ async def test_worker_set_last_polled_time(
 async def test_worker_last_polled_health_check(
     work_pool,
 ):
-    pendulum.now("utc")
+    now = pendulum.now("utc")
     # https://github.com/sdispater/pendulum/blob/master/docs/docs/testing.md
+    pendulum.travel_to(now, freeze=True)
 
     async with WorkerTestImpl(work_pool_name=work_pool.name) as worker:
         resp = worker.is_worker_still_polling(query_interval_seconds=10)
         assert resp is True
 
-        pendulum.now().add(seconds=299)
-        resp = worker.is_worker_still_polling(query_interval_seconds=10)
-        assert resp is True
+        with pendulum.travel(seconds=299):
+            resp = worker.is_worker_still_polling(query_interval_seconds=10)
+            assert resp is True
 
-        pendulum.now().add(seconds=301)
-        resp = worker.is_worker_still_polling(query_interval_seconds=10)
-        assert resp is False
+        with pendulum.travel(seconds=301):
+            resp = worker.is_worker_still_polling(query_interval_seconds=10)
+            assert resp is False
 
-        pendulum.now().add(minutes=30)
-        resp = worker.is_worker_still_polling(query_interval_seconds=60)
-        assert resp is True
+        with pendulum.travel(minutes=30):
+            resp = worker.is_worker_still_polling(query_interval_seconds=60)
+            assert resp is True
 
-        pendulum.now().add(minutes=30, seconds=1)
-        resp = worker.is_worker_still_polling(query_interval_seconds=60)
-        assert resp is False
+        with pendulum.travel(minutes=30, seconds=1):
+            resp = worker.is_worker_still_polling(query_interval_seconds=60)
+            assert resp is False
