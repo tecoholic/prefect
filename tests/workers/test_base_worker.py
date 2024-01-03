@@ -1966,20 +1966,22 @@ async def test_worker_set_last_polled_time(
 ):
     now = pendulum.now("utc")
     # https://github.com/sdispater/pendulum/blob/master/docs/docs/testing.md
+    with pendulum.travel_to(now, freeze=True):
+        async with WorkerTestImpl(work_pool_name=work_pool.name) as worker:
+            # initially, the worker should have _last_polled_time set to now
+            assert worker._last_polled_time == now
 
-    async with WorkerTestImpl(work_pool_name=work_pool.name) as worker:
-        # initially, the worker should have _last_polled_time set to now
-        assert worker._last_polled_time == now
+            # some arbitrary delta forward
+            now2 = now.add(seconds=49)
+            with pendulum.travel_to(now2, freeze=True):
+                await worker.get_and_submit_flow_runs()
+                assert worker._last_polled_time == now2
 
-        # some arbitrary delta forward
-        now2 = pendulum.travel(seconds=49)
-        await worker.get_and_submit_flow_runs()
-        assert worker._last_polled_time == now2
-
-        # some arbitrary datetime
-        now3 = pendulum.datetime(2021, 1, 1, 0, 0, 0, tz="utc")
-        await worker.get_and_submit_flow_runs()
-        assert worker._last_polled_time == now3
+            # some arbitrary datetime
+            now3 = pendulum.datetime(2021, 1, 1, 0, 0, 0, tz="utc")
+            with pendulum.travel_to(now3, freeze=True):
+                await worker.get_and_submit_flow_runs()
+                assert worker._last_polled_time == now3
 
 
 async def test_worker_last_polled_health_check(
