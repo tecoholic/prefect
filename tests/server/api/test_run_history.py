@@ -119,7 +119,7 @@ async def data(db, work_queue):
         # have a completed flow every 12 hours except weekends
         for d in pendulum.interval(dt.subtract(days=14), dt).range("hours", 12):
             # skip weekends
-            if d.day_of_week in (0, 6):
+            if d.day_of_week in (5, 6):
                 continue
 
             await create_flow_run(
