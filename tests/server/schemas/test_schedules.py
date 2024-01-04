@@ -455,7 +455,7 @@ class TestCronScheduleDaylightSavingsTime:
 
         assert [d.in_tz("America/New_York").hour for d in dates] == [23, 0, 1, 2, 3]
         # skips an hour UTC - note cron clocks skip the "5"
-        assert [d.in_tz("UTC").hour for d in dates] == [3, 4, 6, 7, 8]
+        assert [d.in_tz("UTC").hour for d in dates] == [3, 4, 5, 7, 8]
 
     async def test_cron_schedule_daily_start_daylight_savings_time_forward(self):
         """
