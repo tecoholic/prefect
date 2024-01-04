@@ -260,9 +260,10 @@ async def test_history_returns_maximum_items(client, route):
 
     # only first 500 items returned
     assert len(response.json()) == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert min([r["interval_start"] for r in response.json()]) == str(dt)
-    assert max([r["interval_start"] for r in response.json()]) == str(
-        dt.add(minutes=499)
+    assert min([r["interval_start"] for r in response.json()]) == dt.isoformat()
+    assert (
+        max([r["interval_start"] for r in response.json()])
+        == dt.add(minutes=499).isoformat()
     )
 
 
