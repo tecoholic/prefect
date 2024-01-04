@@ -1,13 +1,14 @@
-import datetime
 import json
 import logging
 import sys
+import time
 import traceback
 import uuid
 import warnings
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Type, Union
 
+import pendulum
 from rich.console import Console
 from rich.highlighter import Highlighter, NullHighlighter
 from rich.theme import Theme
@@ -219,18 +220,14 @@ class APILogHandler(logging.Handler):
         except ValueError:
             is_uuid_like = False
 
-        created_time = getattr(record, "created", None)
-        timestamp = (
-            datetime.datetime.fromtimestamp(created_time)
-            if created_time is not None
-            else datetime.datetime.now(tz=datetime.timezone.utc)
-        )
         log = LogCreate(
             flow_run_id=flow_run_id if is_uuid_like else None,
             task_run_id=task_run_id,
             name=record.name,
             level=record.levelno,
-            timestamp=timestamp,
+            timestamp=pendulum.from_timestamp(
+                getattr(record, "created", None) or time.time()
+            ),
             message=self.format(record),
         ).dict(json_compatible=True)
 
